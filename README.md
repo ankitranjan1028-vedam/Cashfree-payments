@@ -1,40 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 🧾 Order & Payment System — Frontend
 
-## Getting Started
+This is the frontend of a full-stack order and payment management system. Built using **Next.js** and **Material UI**, this app allows users to fill out an order form, see the saved entries, and make payments using the **Cashfree** payment gateway.
 
-First, run the development server:
+> ⚠️ Note: This repository currently only includes the **frontend implementation**. The backend (Spring Boot + MySQL) and Cashfree integration are assumed to be developed separately.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📦 Tech Stack
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+| Layer      | Tech Used           |
+|------------|---------------------|
+| Frontend   | Next.js, Material UI|
+| Backend    | Spring Boot         |
+| Database   | MySQL               |
+| Payments   | Cashfree PG         |
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+---
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## 📸 App Flow
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```mermaid
+flowchart TD
+    subgraph Frontend
+        A[User fills form<br/>and clicks **Submit**]
+        C[List page shows entries<br/>+ **Pay** button]
+        E[Open **Cashfree Checkout**<br/>(with sessionId)]
+        H[Show payment‑status<br/>page & details]
+    end
 
-## Learn More
+    subgraph Backend
+        B[(POST /orders/save)]
+        D[(POST /orders)]
+        G[(GET  /orders/{id}/verify)]
+    end
 
-To learn more about Next.js, take a look at the following resources:
+    subgraph Database
+        DB[(MySQL)]
+    end
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+    subgraph Cashfree
+        CF_Create[Create Order API]
+        CF_Checkout[Payment UI]
+        CF_Verify[Verify Payment API]
+    end
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+    A -->|POST /orders/save| B
+    B --> DB
+    DB --> B
+    B --> C
+    C -->|POST /orders| D
+    D --> CF_Create
+    CF_Create --> D
+    D --> E
+    E --> CF_Checkout
+    E -->|GET /orders/{id}/verify| G
+    G --> CF_Verify
+    CF_Verify --> G
+    G --> H
