@@ -17,43 +17,49 @@ This is the frontend of a full-stack order and payment management system. Built 
 
 ---
 
-## 📸 App Flow
+## 🔁 Flow Overview
 
 ```mermaid
 flowchart TD
+    %% ── Frontend ────────────────────────────
     subgraph Frontend
-        A[User fills form<br/>and clicks **Submit**]
-        C[List page shows entries<br/>+ **Pay** button]
-        E[Open **Cashfree Checkout**<br/>(with sessionId)]
-        H[Show payment‑status<br/>page & details]
+        A["User fills form<br/>clicks Submit"]
+        C["List page shows entries<br/>Pay button"]
+        E["Open Cashfree Checkout<br/>(sessionId)"]
+        H["Show payment‑status page"]
     end
 
+    %% ── Backend ─────────────────────────────
     subgraph Backend
-        B[(POST /orders/save)]
-        D[(POST /orders)]
-        G[(GET  /orders/{id}/verify)]
+        B["POST /orders/save"]
+        D["POST /orders"]
+        G["GET  /orders/{id}/verify"]
     end
 
+    %% ── Database ────────────────────────────
     subgraph Database
         DB[(MySQL)]
     end
 
+    %% ── Cashfree ────────────────────────────
     subgraph Cashfree
-        CF_Create[Create Order API]
-        CF_Checkout[Payment UI]
-        CF_Verify[Verify Payment API]
+        CF_Create["Create Order API"]
+        CF_Checkout["Payment UI"]
+        CF_Verify["Verify Payment API"]
     end
 
     A -->|POST /orders/save| B
     B --> DB
     DB --> B
-    B --> C
+    B -->|200 OK| C
+
     C -->|POST /orders| D
     D --> CF_Create
-    CF_Create --> D
-    D --> E
+    CF_Create -->|sessionId| D
+    D -->|sessionId| E
+
     E --> CF_Checkout
-    E -->|GET /orders/{id}/verify| G
+    E -.->|GET /orders/{id}/verify| G
     G --> CF_Verify
     CF_Verify --> G
-    G --> H
+    G -->|status| H
